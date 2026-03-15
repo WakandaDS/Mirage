@@ -13,3 +13,6 @@ dev.html
 
 # Claude Code
 .claude/
+
+# Obsidian
+.obsidian/
