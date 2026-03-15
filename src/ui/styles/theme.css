@@ -1,0 +1,73 @@
+/**
+ * ============================================================
+ *  variaveis-tema.css — Variáveis de tema e estilos base
+ * ============================================================
+ *
+ *  Define todas as variáveis CSS (cores, espaçamentos, efeitos)
+ *  usadas em todo o plugin. Baseado no tema Catppuccin Mocha.
+ *
+ *  Também inclui o reset global (*) e os estilos base do body.
+ * ============================================================
+ */
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* ── Cores de fundo ── */
+      --bg-primary: #11111b;
+      --bg-secondary: #0b0b14;
+      --bg-surface: #1e1e2e;
+      --bg-hover: #313244;
+      --bg-selected: #45475a;
+
+      /* ── Bordas ── */
+      --border: #313244;
+      --border-subtle: #181825;
+
+      /* ── Texto ── */
+      --text-primary: #cdd6f4;
+      --text-secondary: #bac2de;
+      --text-muted: #7f849c;
+
+      /* ── Cor de destaque (accent) ── */
+      --accent: #89b4fa;
+      --accent-dim: rgba(137, 180, 250, 0.1);
+      --accent-glow: rgba(137, 180, 250, 0.4);
+
+      /* ── Cores de estado ── */
+      --danger: #f38ba8;
+      --success: #a6e3a1;
+      --warning: #f9e2af;
+
+      /* ── Paleta de coleções de tokens (8 cores) ── */
+      --col-0: #89b4fa;
+      --col-1: #a6e3a1;
+      --col-2: #f9e2af;
+      --col-3: #f38ba8;
+      --col-4: #cba6f7;
+      --col-5: #94e2d5;
+      --col-6: #fab387;
+      --col-7: #74c7ec;
+
+      /* ── Efeito de vidro (glass) ── */
+      --glass: rgba(30, 30, 46, 0.7);
+      --glass-border: rgba(255, 255, 255, 0.05);
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 11px;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.4;
+    }

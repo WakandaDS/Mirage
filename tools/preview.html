@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Mirage — Screens Preview</title>
+<script src="https://mcp.figma.com/mcp/html-to-design/capture.js" async></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #0b0b14;
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    gap: 64px;
+  }
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #45475a;
+    margin-bottom: 20px;
+  }
+  .screens-row {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+  .screen-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .screen-label {
+    font-size: 10px;
+    color: #7f849c;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Plugin frame ── */
+  .plugin {
+    width: 720px;
+    height: 600px;
+    background: #11111b;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
+    color: #cdd6f4;
+    position: relative;
+    box-shadow: 0 0 0 1px #313244, 0 24px 64px rgba(0,0,0,0.6);
+  }
+
+  /* ── Top bar ── */
+  .cm-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-bottom: 1px solid rgba(124,58,237,0.28);
+    background: #1e1e2e;
+    flex-shrink: 0;
+  }
+  .cm-badge {
+    background: #7c3aed;
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.4px;
+    flex-shrink: 0;
+  }
+  .cm-selectors {
+    display: grid;
+    grid-template-columns: 1fr 36px 1fr;
+    align-items: center;
+    flex: 1;
+  }
+  .cm-slot {
+    background: #313244;
+    border: 1px solid rgba(124,58,237,0.28);
+    border-radius: 6px;
+    padding: 6px 9px;
+    min-width: 0;
+  }
+  .cm-slot.filled {
+    border-color: rgba(124,58,237,0.5);
+    background: rgba(124,58,237,0.08);
+  }
+  .cm-slot.selecting {
+    border-color: rgba(124,58,237,0.8);
+    background: rgba(124,58,237,0.12);
+    animation: pulse-border 1.2s ease-in-out infinite;
+  }
+  @keyframes pulse-border {
+    0%,100% { border-color: rgba(124,58,237,0.8); }
+    50%      { border-color: rgba(124,58,237,0.3); }
+  }
+  .cm-slot-label {
+    font-size: 9px;
+    color: #7f849c;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+  }
+  .cm-slot-value {
+    font-size: 11px;
+    font-weight: 500;
+    color: #cdd6f4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cm-slot-value.empty { color: #45475a; font-style: italic; font-weight: 400; }
+  .cm-vs {
+    text-align: center;
+    color: #7f849c;
+    font-size: 15px;
+    background: none;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 6px;
+    padding: 3px 6px;
+    margin: 0 4px;
+    cursor: pointer;
+  }
+  .ctrl-btn {
+    flex-shrink: 0;
+    font-size: 13px;
+    color: #7f849c;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 4px;
+  }
+  .cm-live-btn {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    color: #7f849c;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    padding: 2px 5px;
+    background: none;
+  }
+  .cm-live-btn.active {
+    color: #22c55e;
+    background: rgba(34,197,94,0.1);
+    border-color: rgba(34,197,94,0.4);
+  }
+
+  /* ── Filter bar ── */
+  .cm-filter {
+    display: flex;
+    gap: 6px;
+    padding: 5px 12px;
+    border-bottom: 1px solid #313244;
+    background: #11111b;
+    flex-shrink: 0;
+  }
+  .cm-filter-input {
+    flex: 1;
+    background: #313244;
+    border: 1px solid #313244;
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-family: Inter, sans-serif;
+    color: #7f849c;
+    font-style: italic;
+  }
+  .cm-filter-input.active { border-color: #7c3aed; color: #cdd6f4; font-style: normal; }
+
+  /* ── Canvas area ── */
+  .cm-area {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    background: #11111b;
+  }
+  .cm-area.loading { opacity: 0.35; }
+
+  /* ── Empty state ── */
+  .cm-empty-state {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .cm-empty-icon { font-size: 32px; opacity: 0.18; }
+  .cm-empty-text { font-size: 11px; color: #45475a; text-align: center; line-height: 1.7; }
+
+  /* ── Loading spinner ── */
+  .cm-spinner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cm-spinner-ring {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid rgba(124,58,237,0.15);
+    border-top-color: rgba(124,58,237,0.7);
+  }
+
+  /* ── SVG canvas content ── */
+  .cm-canvas-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* ── Legend ── */
+  .cm-legend {
+    display: flex;
+    gap: 12px;
+    padding: 8px 12px;
+    border-top: 1px solid #313244;
+    background: #1e1e2e;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .cm-leg {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    color: #7f849c;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid transparent;
+  }
+  .cm-leg.active {
+    color: #cdd6f4;
+    background: rgba(255,255,255,0.07);
+    border-color: rgba(255,255,255,0.15);
+  }
+  .cm-leg.dim { opacity: 0.35; }
+  .cm-leg-line {
+    width: 16px;
+    height: 2px;
+    border-radius: 1px;
+    flex-shrink: 0;
+  }
+  .cm-leg-count { font-size: 9px; font-weight: 600; opacity: 0.6; }
+  .cm-leg.active .cm-leg-count { opacity: 1; }
+  .dashed {
+    background: transparent !important;
+    border-top: 2px dashed currentColor;
+    height: 0 !important;
+    margin-top: 1px;
+  }
+
+  /* ── Dropdown ── */
+  .cm-dropdown {
+    position: absolute;
+    top: 50px;
+    left: 12px;
+    width: 200px;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 100;
+  }
+  .cm-dd-item {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    padding: 5px 10px;
+    font-size: 11px;
+    color: #cdd6f4;
+  }
+  .cm-dd-item.hovered { background: #313244; }
+  .cm-dd-type { font-size: 9px; color: #7f849c; text-transform: lowercase; }
+
+  /* ── Tooltip ── */
+  .cm-tooltip {
+    position: absolute;
+    background: #1e1e2e;
+    border: 1px solid #313244;
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 11px;
+    color: #cdd6f4;
+    line-height: 1.5;
+    width: 200px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+    z-index: 200;
+  }
+  .tip-name { font-size: 10px; font-weight: 600; word-break: break-all; }
+  .tip-prop { font-size: 9px; color: #7f849c; margin-top: 1px; }
+  .tip-val  { font-size: 10px; font-family: monospace; margin-top: 3px; opacity: 0.75; }
+  .tip-row  { font-size: 9px; margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+  .tip-side { background: rgba(255,255,255,0.1); border-radius: 3px; padding: 0 4px; font-weight: 600; font-size: 8px; }
+  .tip-kind { display: inline-block; margin-top: 4px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  /* ── Focus overlay ── */
+  .cm-focus-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,18,0.72);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 300;
+  }
+  .cm-focus-card {
+    background: rgba(28,27,40,0.97);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    width: 340px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  }
+  .focus-header { display: flex; align-items: center; gap: 8px; }
+  .focus-back {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+    padding: 4px 8px;
+    flex-shrink: 0;
+  }
+  .focus-fullname { flex: 1; font-size: 10px; color: rgba(255,255,255,0.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .focus-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; flex-shrink: 0; }
+  .focus-mini-canvas {
+    width: 100%; height: 56px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 6px;
+    display: block;
+  }
+  .focus-info { display: flex; gap: 12px; align-items: stretch; }
+  .focus-side { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+  .focus-side-label { font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: rgba(255,255,255,0.28); text-transform: uppercase; margin-bottom: 2px; }
+  .focus-token-name { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.88); line-height: 1.3; }
+  .focus-token-prop { font-size: 9px; color: rgba(255,255,255,0.38); }
+  .focus-token-val  { font-size: 10px; color: rgba(255,255,255,0.55); word-break: break-all; }
+  .focus-divider { width: 1px; background: rgba(255,255,255,0.08); flex-shrink: 0; }
+
+  /* ── Error screen ── */
+  .error-view {
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    text-align: center;
+    gap: 16px;
+  }
+  .error-icon { font-size: 36px; }
+  .error-msg { color: #f38ba8; font-size: 11px; font-family: monospace; word-break: break-all; line-height: 1.6; max-width: 400px; }
+
+  /* ── Copy toast ── */
+  .cm-toast {
+    position: absolute;
+    bottom: 52px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(22,21,34,0.97);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 7px 14px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+    z-index: 400;
+    white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 1 — Estado vazio (nenhum componente seleccionado)
+     ═══════════════════════════════════════════════════════ -->
+<div class="screens-row">
+  <div class="screen-wrap">
+    <div class="section-title">01 — Estado vazio</div>
+    <div class="plugin">
+      <!-- Top bar -->
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot">
+            <div class="cm-slot-label">Componente A</div>
+            <div class="cm-slot-value empty">Selecionar…</div>
+          </div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot">
+            <div class="cm-slot-label">Componente B</div>
+            <div class="cm-slot-value empty">Selecionar…</div>
+          </div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn">LIVE</span>
+      </div>
+      <!-- Filter -->
+      <div class="cm-filter">
+        <div class="cm-filter-input">Filtrar layer…</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <!-- Empty canvas -->
+      <div class="cm-area">
+        <div class="cm-empty-state">
+          <div class="cm-empty-icon">⊞</div>
+          <div class="cm-empty-text">
+            Clica num slot para seleccionar um componente<br>
+            ou escreve o nome para pesquisar
+          </div>
+        </div>
+      </div>
+      <!-- Empty legend -->
+      <div class="cm-legend" style="min-height:36px;"></div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 2 — Slot A preenchido, aguarda B
+     ═══════════════════════════════════════════════════════ -->
+  <div class="screen-wrap">
+    <div class="section-title">02 — Slot A preenchido</div>
+    <div class="plugin">
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot filled">
+            <div class="cm-slot-label">Componente A</div>
+            <div class="cm-slot-value">Button / Primary</div>
+          </div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot selecting">
+            <div class="cm-slot-label">Componente B</div>
+            <div class="cm-slot-value empty">A selecionar…</div>
+          </div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn">LIVE</span>
+      </div>
+      <div class="cm-filter">
+        <div class="cm-filter-input">Filtrar layer…</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <div class="cm-area">
+        <div class="cm-empty-state">
+          <div class="cm-empty-icon">→</div>
+          <div class="cm-empty-text">
+            Selecciona o Componente B no canvas<br>
+            para iniciar a comparação
+          </div>
+        </div>
+      </div>
+      <div class="cm-legend" style="min-height:36px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 3 — Dropdown autocomplete aberto
+     ═══════════════════════════════════════════════════════ -->
+<div class="screens-row">
+  <div class="screen-wrap">
+    <div class="section-title">03 — Dropdown de autocomplete</div>
+    <div class="plugin">
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot" style="position:relative; border-color:#7c3aed;">
+            <div class="cm-slot-label">Componente A</div>
+            <input style="display:block;width:100%;background:transparent;border:none;outline:none;font-size:11px;font-weight:500;font-family:Inter,sans-serif;color:#cdd6f4;" value="Button" />
+            <!-- dropdown -->
+            <div class="cm-dropdown" style="top:46px; left:0; width:220px;">
+              <div class="cm-dd-item hovered"><span style="flex:1">Button / Primary</span><span class="cm-dd-type">component</span></div>
+              <div class="cm-dd-item"><span style="flex:1">Button / Secondary</span><span class="cm-dd-type">component</span></div>
+              <div class="cm-dd-item"><span style="flex:1">Button / Ghost</span><span class="cm-dd-type">component</span></div>
+              <div class="cm-dd-item"><span style="flex:1">Button / Danger</span><span class="cm-dd-type">component</span></div>
+              <div class="cm-dd-item"><span style="flex:1">Button Group</span><span class="cm-dd-type">component set</span></div>
+            </div>
+          </div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot">
+            <div class="cm-slot-label">Componente B</div>
+            <div class="cm-slot-value empty">Selecionar…</div>
+          </div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn">LIVE</span>
+      </div>
+      <div class="cm-filter">
+        <div class="cm-filter-input">Filtrar layer…</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <div class="cm-area"><div class="cm-empty-state"><div class="cm-empty-icon">⊞</div><div class="cm-empty-text">Clica num slot para seleccionar um componente</div></div></div>
+      <div class="cm-legend" style="min-height:36px;"></div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 4 — A comparar (loading)
+     ═══════════════════════════════════════════════════════ -->
+  <div class="screen-wrap">
+    <div class="section-title">04 — A comparar (loading)</div>
+    <div class="plugin">
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot filled">
+            <div class="cm-slot-label">Componente A</div>
+            <div class="cm-slot-value">Button / Primary</div>
+          </div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot filled">
+            <div class="cm-slot-label">Componente B</div>
+            <div class="cm-slot-value">Button / Secondary</div>
+          </div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn">LIVE</span>
+      </div>
+      <div class="cm-filter">
+        <div class="cm-filter-input">Filtrar layer…</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <div class="cm-area loading">
+        <div class="cm-spinner">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+            <div class="cm-spinner-ring"></div>
+            <div style="font-size:10px;color:#45475a;">A analisar tokens…</div>
+          </div>
+        </div>
+      </div>
+      <div class="cm-legend" style="min-height:36px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 5 — Resultado completo (grafo + legenda)
+     ═══════════════════════════════════════════════════════ -->
+<div class="screens-row">
+  <div class="screen-wrap">
+    <div class="section-title">05 — Resultado completo</div>
+    <div class="plugin">
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot filled">
+            <div class="cm-slot-label">Componente A</div>
+            <div class="cm-slot-value">Button / Primary</div>
+          </div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot filled">
+            <div class="cm-slot-label">Componente B</div>
+            <div class="cm-slot-value">Button / Secondary</div>
+          </div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn">LIVE</span>
+      </div>
+      <div class="cm-filter">
+        <div class="cm-filter-input">Filtrar layer…</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <div class="cm-area">
+        <svg class="cm-canvas-svg" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg">
+          <!-- CENTER LINE -->
+          <line x1="360" y1="0" x2="360" y2="460" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+
+          <!-- SIDE A LAYERS -->
+          <!-- Root layer -->
+          <rect x="12" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1"/>
+          <text x="20" y="23" font-size="10" fill="rgba(151,71,255,0.9)" font-family="Inter,sans-serif">◇</text>
+          <text x="32" y="23" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif">Button</text>
+          <text x="112" y="23" font-size="10" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">▾</text>
+
+          <!-- Indent guide A -->
+          <line x1="26" y1="34" x2="26" y2="200" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+
+          <!-- Layer: Container -->
+          <rect x="26" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <text x="34" y="51" font-size="10" fill="rgba(255,255,255,0.4)" font-family="Inter,sans-serif">□</text>
+          <text x="46" y="51" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif">Container</text>
+          <text x="126" y="51" font-size="10" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">▾</text>
+
+          <!-- Token rows A: fills/exact -->
+          <rect x="40" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <text x="44" y="76" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">color/brand/primary</text>
+          <text x="44" y="84" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">fills</text>
+          <circle cx="322" cy="77" r="5" fill="#22c55e" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+
+          <!-- Token rows A: renamed -->
+          <rect x="40" y="90" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <text x="44" y="98" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">spacing/md</text>
+          <text x="44" y="106" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">paddingTop</text>
+          <circle cx="322" cy="99" r="5" fill="#eab308" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+
+          <!-- Token rows A: drifted -->
+          <rect x="40" y="112" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <text x="44" y="120" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">radius/base</text>
+          <text x="44" y="128" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">cornerRadius</text>
+          <circle cx="322" cy="121" r="5" fill="#f97316" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+
+          <!-- Hardcoded row A -->
+          <rect x="40" y="134" width="286" height="18" rx="3" fill="rgba(107,114,128,0.06)"/>
+          <text x="44" y="142" font-size="9" fill="rgba(107,114,128,0.9)" font-family="Inter,sans-serif">#1e1e2e</text>
+          <text x="44" y="150" font-size="8" fill="rgba(107,114,128,0.55)" font-family="Inter,sans-serif">strokes</text>
+          <circle cx="322" cy="143" r="5" fill="none" stroke="#6b7280" stroke-width="1.5"/>
+
+          <!-- Removal token A -->
+          <rect x="40" y="156" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <text x="44" y="164" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">shadow/elevation/1</text>
+          <text x="44" y="172" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">effects</text>
+          <circle cx="322" cy="165" r="5" fill="#ef4444" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <!-- Removal dashed line -->
+          <line x1="327" y1="165" x2="349" y2="165" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.4"/>
+
+          <!-- Layer: Label (child) -->
+          <rect x="40" y="182" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <text x="48" y="193" font-size="10" fill="rgba(255,255,255,0.4)" font-family="Inter,sans-serif">T</text>
+          <text x="60" y="193" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif">Label</text>
+          <text x="140" y="193" font-size="10" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">▸</text>
+
+          <!-- BEZIER LINES (center) -->
+          <!-- exact: 77 ↔ 77 -->
+          <path d="M 327 77 C 342 77, 376 77, 393 77" stroke="#22c55e" stroke-width="1.5" fill="none" opacity="0.65"/>
+          <!-- renamed: 99 ↔ 99 -->
+          <path d="M 327 99 C 342 99, 376 99, 393 99" stroke="#eab308" stroke-width="1.5" fill="none" opacity="0.65"/>
+          <!-- drifted: 121 ↔ 121 -->
+          <path d="M 327 121 C 342 121, 376 121, 393 121" stroke="#f97316" stroke-width="1.5" fill="none" opacity="0.65"/>
+
+          <!-- SIDE B LAYERS -->
+          <!-- Root layer -->
+          <rect x="600" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1"/>
+          <text x="608" y="23" font-size="10" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">▾</text>
+          <text x="686" y="23" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif" text-anchor="end">Button</text>
+          <text x="699" y="23" font-size="10" fill="rgba(151,71,255,0.9)" font-family="Inter,sans-serif">◇</text>
+
+          <!-- Layer: Container B -->
+          <rect x="586" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <text x="594" y="51" font-size="10" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">▾</text>
+          <text x="686" y="51" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif" text-anchor="end">Container</text>
+          <text x="686" y="51" font-size="10" fill="rgba(255,255,255,0.4)" font-family="Inter,sans-serif">□</text>
+
+          <!-- Token rows B: exact -->
+          <rect x="394" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="77" r="5" fill="#22c55e" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <text x="676" y="76" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end">color/brand/primary</text>
+          <text x="676" y="84" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif" text-anchor="end">fills</text>
+
+          <!-- Token rows B: renamed -->
+          <rect x="394" y="90" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="99" r="5" fill="#eab308" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <text x="676" y="98" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end">space/medium</text>
+          <text x="676" y="106" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif" text-anchor="end">paddingTop</text>
+
+          <!-- Token rows B: drifted -->
+          <rect x="394" y="112" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="121" r="5" fill="#f97316" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <text x="676" y="120" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end">radius/base</text>
+          <text x="676" y="128" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif" text-anchor="end">cornerRadius</text>
+
+          <!-- Addon token B -->
+          <rect x="394" y="134" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="143" r="5" fill="#3b82f6" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <text x="676" y="142" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end">opacity/interactive</text>
+          <text x="676" y="150" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif" text-anchor="end">opacity</text>
+
+          <!-- Layer: Label B -->
+          <rect x="572" y="182" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <text x="580" y="193" font-size="10" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">▸</text>
+          <text x="672" y="193" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif" text-anchor="end">Label</text>
+          <text x="674" y="193" font-size="10" fill="rgba(255,255,255,0.4)" font-family="Inter,sans-serif">T</text>
+
+          <!-- Broken ref layer A (amber) -->
+          <rect x="26" y="210" width="108" height="22" rx="4" fill="rgba(245,158,11,0.12)" stroke="rgba(245,158,11,0.65)" stroke-width="1" stroke-dasharray="3,2"/>
+          <text x="34" y="221" font-size="10" fill="rgba(245,158,11,0.8)" font-family="Inter,sans-serif">□</text>
+          <text x="46" y="221" font-size="10" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">Icon Slot</text>
+        </svg>
+      </div>
+      <!-- Legend full -->
+      <div class="cm-legend">
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#22c55e"></div><span>Exact</span><span class="cm-leg-count">4</span></div>
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#eab308"></div><span>Renamed</span><span class="cm-leg-count">2</span></div>
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#f97316"></div><span>Drifted</span><span class="cm-leg-count">1</span></div>
+        <div class="cm-leg"><div class="cm-leg-line dashed" style="color:#ef4444"></div><span>Removal</span><span class="cm-leg-count">3</span></div>
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#3b82f6"></div><span>Add-on</span><span class="cm-leg-count">2</span></div>
+        <div class="cm-leg"><div class="cm-leg-line dashed" style="color:#6b7280"></div><span>Hardcoded</span><span class="cm-leg-count">1</span></div>
+        <div class="cm-leg"><div class="cm-leg-line dashed" style="color:#f59e0b"></div><span>Broken ref</span><span class="cm-leg-count">1</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 6 — Legenda com multiselect activo (2 kinds)
+     ═══════════════════════════════════════════════════════ -->
+<div class="screens-row">
+  <div class="screen-wrap">
+    <div class="section-title">06 — Filtro activo (multiselect: Drifted + Removal)</div>
+    <div class="plugin">
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente A</div><div class="cm-slot-value">Button / Primary</div></div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente B</div><div class="cm-slot-value">Button / Secondary</div></div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn">LIVE</span>
+      </div>
+      <div class="cm-filter">
+        <div class="cm-filter-input">Filtrar layer…</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <div class="cm-area">
+        <svg class="cm-canvas-svg" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg">
+          <line x1="360" y1="0" x2="360" y2="460" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+
+          <!-- Root layer A (visible, has non-special tokens) -->
+          <rect x="12" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1" opacity="1"/>
+          <text x="20" y="23" font-size="10" fill="rgba(151,71,255,0.9)" font-family="Inter,sans-serif">◇</text>
+          <text x="32" y="23" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif">Button</text>
+
+          <!-- Container layer A (visible) -->
+          <rect x="26" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <text x="34" y="51" font-size="10" fill="rgba(255,255,255,0.4)" font-family="Inter,sans-serif">□</text>
+          <text x="46" y="51" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif">Container</text>
+
+          <!-- Dimmed exact token -->
+          <rect x="40" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)" opacity="0.14"/>
+          <text x="44" y="76" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" opacity="0.14">color/brand/primary</text>
+          <circle cx="322" cy="77" r="5" fill="#22c55e" stroke="rgba(0,0,0,0.35)" stroke-width="1.5" opacity="0.14"/>
+
+          <!-- Dimmed renamed token -->
+          <rect x="40" y="90" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)" opacity="0.14"/>
+          <text x="44" y="98" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" opacity="0.14">spacing/md</text>
+          <circle cx="322" cy="99" r="5" fill="#eab308" stroke="rgba(0,0,0,0.35)" stroke-width="1.5" opacity="0.14"/>
+
+          <!-- Active drifted token -->
+          <rect x="40" y="112" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <text x="44" y="120" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">radius/base</text>
+          <text x="44" y="128" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">cornerRadius</text>
+          <circle cx="322" cy="121" r="5" fill="#f97316" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+
+          <!-- Active removal token -->
+          <rect x="40" y="134" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <text x="44" y="142" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">shadow/elevation/1</text>
+          <text x="44" y="150" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">effects</text>
+          <circle cx="322" cy="143" r="5" fill="#ef4444" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <line x1="327" y1="143" x2="349" y2="143" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.4"/>
+
+          <!-- Dimmed bezier exact -->
+          <path d="M 327 77 C 342 77, 376 77, 393 77" stroke="#22c55e" stroke-width="1" fill="none" opacity="0.06"/>
+          <!-- Dimmed bezier renamed -->
+          <path d="M 327 99 C 342 99, 376 99, 393 99" stroke="#eab308" stroke-width="1" fill="none" opacity="0.06"/>
+          <!-- Active bezier drifted -->
+          <path d="M 327 121 C 342 121, 376 121, 393 121" stroke="#f97316" stroke-width="1.5" fill="none" opacity="0.65"/>
+
+          <!-- Side B mirrors (same dimming) -->
+          <rect x="600" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1"/>
+          <text x="686" y="23" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif" text-anchor="end">Button</text>
+          <text x="699" y="23" font-size="10" fill="rgba(151,71,255,0.9)" font-family="Inter,sans-serif">◇</text>
+
+          <rect x="586" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <text x="672" y="51" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif" text-anchor="end">Container</text>
+
+          <rect x="394" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)" opacity="0.14"/>
+          <circle cx="398" cy="77" r="5" fill="#22c55e" opacity="0.14" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <text x="676" y="76" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end" opacity="0.14">color/brand/primary</text>
+
+          <rect x="394" y="90" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)" opacity="0.14"/>
+          <circle cx="398" cy="99" r="5" fill="#eab308" opacity="0.14" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <text x="676" y="98" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end" opacity="0.14">space/medium</text>
+
+          <rect x="394" y="112" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="121" r="5" fill="#f97316" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <text x="676" y="120" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end">radius/base</text>
+          <text x="676" y="128" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif" text-anchor="end">cornerRadius</text>
+        </svg>
+      </div>
+      <div class="cm-legend">
+        <div class="cm-leg dim"><div class="cm-leg-line" style="background:#22c55e"></div><span>Exact</span><span class="cm-leg-count">4</span></div>
+        <div class="cm-leg dim"><div class="cm-leg-line" style="background:#eab308"></div><span>Renamed</span><span class="cm-leg-count">2</span></div>
+        <div class="cm-leg active"><div class="cm-leg-line" style="background:#f97316"></div><span>Drifted</span><span class="cm-leg-count">1</span></div>
+        <div class="cm-leg active"><div class="cm-leg-line dashed" style="color:#ef4444"></div><span>Removal</span><span class="cm-leg-count">3</span></div>
+        <div class="cm-leg dim"><div class="cm-leg-line" style="background:#3b82f6"></div><span>Add-on</span><span class="cm-leg-count">2</span></div>
+        <div class="cm-leg dim"><div class="cm-leg-line dashed" style="color:#6b7280"></div><span>Hardcoded</span><span class="cm-leg-count">1</span></div>
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 7 — Tooltip de token (hover)
+     ═══════════════════════════════════════════════════════ -->
+  <div class="screen-wrap">
+    <div class="section-title">07 — Tooltip de token (hover)</div>
+    <div class="plugin">
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente A</div><div class="cm-slot-value">Button / Primary</div></div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente B</div><div class="cm-slot-value">Button / Secondary</div></div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn">LIVE</span>
+      </div>
+      <div class="cm-filter">
+        <div class="cm-filter-input">Filtrar layer…</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <div class="cm-area" style="position:relative;">
+        <svg class="cm-canvas-svg" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg">
+          <line x1="360" y1="0" x2="360" y2="460" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+          <!-- Same base layout, dimmed except hovered token -->
+          <rect x="12" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1" opacity="0.2"/>
+          <rect x="26" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1" opacity="0.2"/>
+
+          <!-- Dimmed tokens -->
+          <rect x="40" y="68" width="286" height="18" rx="3" opacity="0.2" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="322" cy="77" r="5" fill="#22c55e" opacity="0.2"/>
+          <rect x="40" y="112" width="286" height="18" rx="3" opacity="0.2" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="322" cy="121" r="5" fill="#f97316" opacity="0.2"/>
+
+          <!-- HOVERED token (drifted, full opacity + ring) -->
+          <rect x="40" y="90" width="286" height="18" rx="3" fill="rgba(140,100,255,0.15)"/>
+          <rect x="39" y="89" width="288" height="20" rx="4" fill="none" stroke="rgba(170,130,255,0.95)" stroke-width="0"/>
+          <text x="44" y="98" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">spacing/md</text>
+          <text x="44" y="106" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif">paddingTop</text>
+          <circle cx="322" cy="99" r="5" fill="#eab308" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <circle cx="322" cy="99" r="9" fill="none" stroke="#eab308" stroke-width="2"/>
+
+          <!-- Dimmed bezier -->
+          <path d="M 327 77 C 342 77, 376 77, 393 77" stroke="#22c55e" fill="none" stroke-width="1" opacity="0.1"/>
+          <!-- Hovered bezier -->
+          <path d="M 327 99 C 342 99, 376 99, 393 99" stroke="#eab308" fill="none" stroke-width="2.5" opacity="1"/>
+          <path d="M 327 121 C 342 121, 376 121, 393 121" stroke="#f97316" fill="none" stroke-width="1" opacity="0.1"/>
+
+          <!-- Side B hovered counterpart -->
+          <rect x="394" y="90" width="286" height="18" rx="3" fill="rgba(140,100,255,0.15)"/>
+          <circle cx="398" cy="99" r="5" fill="#eab308" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <circle cx="398" cy="99" r="9" fill="none" stroke="#eab308" stroke-width="2"/>
+          <text x="676" y="98" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end">space/medium</text>
+          <text x="676" y="106" font-size="8" fill="rgba(255,255,255,0.3)" font-family="Inter,sans-serif" text-anchor="end">paddingTop</text>
+
+          <rect x="394" y="68" width="286" height="18" rx="3" opacity="0.2" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="77" r="5" fill="#22c55e" opacity="0.2"/>
+          <rect x="394" y="112" width="286" height="18" rx="3" opacity="0.2" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="121" r="5" fill="#f97316" opacity="0.2"/>
+
+          <rect x="600" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1" opacity="0.2"/>
+          <rect x="586" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1" opacity="0.2"/>
+        </svg>
+
+        <!-- Tooltip popup -->
+        <div class="cm-tooltip" style="top:80px; left:200px;">
+          <div class="tip-name">spacing/md</div>
+          <div class="tip-prop">paddingTop</div>
+          <div class="tip-val">16</div>
+          <div class="tip-row"><span class="tip-side">A</span><span>spacing/md</span></div>
+          <div class="tip-row"><span class="tip-side">B</span><span>space/medium</span></div>
+          <span class="tip-kind" style="color:#eab308">renamed</span>
+        </div>
+      </div>
+      <div class="cm-legend">
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#22c55e"></div><span>Exact</span><span class="cm-leg-count">4</span></div>
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#eab308"></div><span>Renamed</span><span class="cm-leg-count">2</span></div>
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#f97316"></div><span>Drifted</span><span class="cm-leg-count">1</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 8 — Focus Overlay (double-click em token)
+     ═══════════════════════════════════════════════════════ -->
+<div class="screens-row">
+  <div class="screen-wrap">
+    <div class="section-title">08 — Focus Overlay (double-click)</div>
+    <div class="plugin">
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente A</div><div class="cm-slot-value">Button / Primary</div></div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente B</div><div class="cm-slot-value">Button / Secondary</div></div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn">LIVE</span>
+      </div>
+      <div class="cm-filter">
+        <div class="cm-filter-input">Filtrar layer…</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <div class="cm-area" style="position:relative;">
+        <!-- Blurred background -->
+        <svg class="cm-canvas-svg" viewBox="0 0 720 460" style="filter:blur(2px);opacity:0.4;" xmlns="http://www.w3.org/2000/svg">
+          <rect x="12" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1"/>
+          <rect x="26" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <rect x="40" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="322" cy="77" r="5" fill="#22c55e"/>
+          <path d="M 327 77 C 342 77, 376 77, 393 77" stroke="#22c55e" stroke-width="1.5" fill="none" opacity="0.65"/>
+          <rect x="600" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1"/>
+          <rect x="394" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="77" r="5" fill="#22c55e"/>
+        </svg>
+
+        <!-- Focus overlay -->
+        <div class="cm-focus-overlay">
+          <div class="cm-focus-card">
+            <div class="focus-header">
+              <button class="focus-back">← Voltar</button>
+              <div class="focus-fullname">Primitives/Color/Brand/Primary/500</div>
+              <div class="focus-badge" style="color:#eab308">renamed</div>
+            </div>
+
+            <!-- Mini canvas: A→B line -->
+            <svg class="focus-mini-canvas" viewBox="0 0 308 56" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="20" cy="28" r="6" fill="#eab308"/>
+              <path d="M 26 28 C 100 28, 208 28, 282 28" stroke="#eab308" stroke-width="1.5" fill="none" opacity="0.6" stroke-dasharray="0"/>
+              <circle cx="288" cy="28" r="6" fill="#eab308"/>
+              <text x="33" y="22" font-size="8" fill="rgba(255,255,255,0.35)" font-family="Inter,sans-serif">spacing/md</text>
+              <text x="278" y="22" font-size="8" fill="rgba(255,255,255,0.35)" font-family="Inter,sans-serif" text-anchor="end">space/medium</text>
+            </svg>
+
+            <div class="focus-info">
+              <div class="focus-side">
+                <div class="focus-side-label">A — Button / Primary</div>
+                <div class="focus-token-name">spacing/md</div>
+                <div class="focus-token-prop">paddingTop</div>
+                <div class="focus-token-val">16</div>
+              </div>
+              <div class="focus-divider"></div>
+              <div class="focus-side" style="text-align:right;">
+                <div class="focus-side-label" style="text-align:right;">B — Button / Secondary</div>
+                <div class="focus-token-name">space/medium</div>
+                <div class="focus-token-prop">paddingTop</div>
+                <div class="focus-token-val">16</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cm-legend">
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#22c55e"></div><span>Exact</span><span class="cm-leg-count">4</span></div>
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#eab308"></div><span>Renamed</span><span class="cm-leg-count">2</span></div>
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 9 — Live refresh activo
+     ═══════════════════════════════════════════════════════ -->
+  <div class="screen-wrap">
+    <div class="section-title">09 — Live refresh activo</div>
+    <div class="plugin">
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente A</div><div class="cm-slot-value">Button / Primary</div></div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente B</div><div class="cm-slot-value">Button / Secondary</div></div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn active">LIVE</span>
+      </div>
+      <div class="cm-filter">
+        <div class="cm-filter-input">Filtrar layer…</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <div class="cm-area">
+        <svg class="cm-canvas-svg" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg">
+          <line x1="360" y1="0" x2="360" y2="460" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+          <rect x="12" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1"/>
+          <text x="32" y="23" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif">Button</text>
+          <rect x="26" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <text x="46" y="51" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif">Container</text>
+          <rect x="40" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <text x="44" y="76" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">color/brand/primary</text>
+          <circle cx="322" cy="77" r="5" fill="#22c55e" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <path d="M 327 77 C 342 77, 376 77, 393 77" stroke="#22c55e" stroke-width="1.5" fill="none" opacity="0.65"/>
+          <rect x="394" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="77" r="5" fill="#22c55e" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <rect x="600" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1"/>
+          <text x="672" y="23" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif" text-anchor="end">Button</text>
+          <!-- Green pulse ring around live indicator hint -->
+          <circle cx="360" cy="230" r="40" fill="none" stroke="rgba(34,197,94,0.05)" stroke-width="1"/>
+          <text x="360" y="226" font-size="9" fill="rgba(34,197,94,0.3)" font-family="Inter,sans-serif" text-anchor="middle">a observar mudanças</text>
+          <text x="360" y="240" font-size="9" fill="rgba(34,197,94,0.2)" font-family="Inter,sans-serif" text-anchor="middle">no documento…</text>
+        </svg>
+      </div>
+      <div class="cm-legend">
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#22c55e"></div><span>Exact</span><span class="cm-leg-count">4</span></div>
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#eab308"></div><span>Renamed</span><span class="cm-leg-count">2</span></div>
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#f97316"></div><span>Drifted</span><span class="cm-leg-count">1</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 10 — Filtro de texto activo (layer filter)
+     ═══════════════════════════════════════════════════════ -->
+<div class="screens-row">
+  <div class="screen-wrap">
+    <div class="section-title">10 — Filtro de texto activo</div>
+    <div class="plugin">
+      <div class="cm-top">
+        <div class="cm-badge">Mirage β</div>
+        <div class="cm-selectors">
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente A</div><div class="cm-slot-value">Button / Primary</div></div>
+          <div class="cm-vs">⇄</div>
+          <div class="cm-slot filled"><div class="cm-slot-label">Componente B</div><div class="cm-slot-value">Button / Secondary</div></div>
+        </div>
+        <span class="ctrl-btn">⊞</span>
+        <span class="ctrl-btn">↺</span>
+        <span class="cm-live-btn">LIVE</span>
+      </div>
+      <div class="cm-filter">
+        <div class="cm-filter-input active" style="border-color:#7c3aed;">Container</div>
+        <div class="cm-filter-input">Filtrar token…</div>
+      </div>
+      <div class="cm-area">
+        <svg class="cm-canvas-svg" viewBox="0 0 720 460" xmlns="http://www.w3.org/2000/svg">
+          <line x1="360" y1="0" x2="360" y2="460" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+          <!-- Only matching layers shown -->
+          <rect x="12" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1"/>
+          <text x="32" y="23" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif">Button</text>
+          <rect x="26" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <text x="46" y="51" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif">Container</text>
+          <rect x="40" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <text x="44" y="76" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">color/brand/primary</text>
+          <circle cx="322" cy="77" r="5" fill="#22c55e" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <rect x="40" y="90" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <text x="44" y="98" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif">spacing/md</text>
+          <circle cx="322" cy="99" r="5" fill="#eab308" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <path d="M 327 77 C 342 77, 376 77, 393 77" stroke="#22c55e" stroke-width="1.5" fill="none" opacity="0.65"/>
+          <path d="M 327 99 C 342 99, 376 99, 393 99" stroke="#eab308" stroke-width="1.5" fill="none" opacity="0.65"/>
+          <rect x="600" y="12" width="108" height="22" rx="4" fill="rgba(151,71,255,0.12)" stroke="rgba(151,71,255,0.38)" stroke-width="1"/>
+          <text x="672" y="23" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif" text-anchor="end">Button</text>
+          <rect x="586" y="40" width="108" height="22" rx="4" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.14)" stroke-width="1"/>
+          <text x="672" y="51" font-size="10" fill="rgba(255,255,255,0.82)" font-family="Inter,sans-serif" text-anchor="end">Container</text>
+          <rect x="394" y="68" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="77" r="5" fill="#22c55e" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <text x="676" y="76" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end">color/brand/primary</text>
+          <rect x="394" y="90" width="286" height="18" rx="3" fill="rgba(255,255,255,0.03)"/>
+          <circle cx="398" cy="99" r="5" fill="#eab308" stroke="rgba(0,0,0,0.35)" stroke-width="1.5"/>
+          <text x="676" y="98" font-size="9" fill="rgba(255,255,255,0.65)" font-family="Inter,sans-serif" text-anchor="end">space/medium</text>
+        </svg>
+      </div>
+      <div class="cm-legend">
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#22c55e"></div><span>Exact</span><span class="cm-leg-count">4</span></div>
+        <div class="cm-leg"><div class="cm-leg-line" style="background:#eab308"></div><span>Renamed</span><span class="cm-leg-count">2</span></div>
+      </div>
+    </div>
+  </div>
+
+<!-- ═══════════════════════════════════════════════════════
+     ECRÃ 11 — Ecrã de erro
+     ═══════════════════════════════════════════════════════ -->
+  <div class="screen-wrap">
+    <div class="section-title">11 — Ecrã de erro</div>
+    <div class="plugin">
+      <div class="error-view">
+        <div class="error-icon">⚠️</div>
+        <div class="error-msg">Error: Cannot read properties of null (reading 'boundVariables') — node não encontrado ou foi eliminado entretanto.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

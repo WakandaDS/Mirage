@@ -1,0 +1,712 @@
+/**
+ * ============================================================
+ *  compare-mode.css — Compare Mode (F8) β
+ * ============================================================
+ *
+ *  Estilos para a view de comparação entre dois componentes.
+ *  A área de visualização usa um canvas único (#cm-canvas).
+ *
+ *  Estrutura:
+ *    #compare               — container principal (flex coluna)
+ *    #cm-top                — barra topo: badge + selectors
+ *    #cm-selectors          — grid 3 colunas: A | ⟷ | B
+ *    #cm-summary            — barra de resumo pós-comparação
+ *    #cm-area               — canvas de grafo estático
+ *    #cm-legend             — legenda de tipos de match
+ * ============================================================
+ */
+
+    /* ── Variável de tema beta ── */
+    :root {
+      --beta:        #7c3aed;
+      --beta-dim:    rgba(124, 58, 237, 0.12);
+      --beta-border: rgba(124, 58, 237, 0.28);
+    }
+
+    /* ── Container principal ── */
+    #compare {
+      display: none;
+      flex-direction: column;
+      height: 100%;
+      background: var(--bg-primary);
+      overflow: hidden;
+    }
+
+    /* ── Barra de topo ── */
+    #cm-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--beta-border);
+      background: var(--bg-surface);
+      flex-shrink: 0;
+    }
+
+    #cm-badge {
+      background: var(--beta);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 4px 8px;
+      border-radius: 4px;
+      letter-spacing: 0.4px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: normal;
+      gap: 0;
+    }
+
+    /* ── Selectors ── */
+    #cm-selectors {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cm-slot {
+      position: relative;
+      background: #313244;
+      border: 1px solid rgba(124,58,237,0.28);
+      border-radius: 6px;
+      padding: 6px 10px 4px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      min-width: 0;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+
+    .cm-slot:hover {
+      border-color: var(--beta);
+      background: var(--beta-dim);
+    }
+
+    .cm-slot-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      line-height: normal;
+    }
+
+    .cm-slot-value {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: normal;
+    }
+
+    .cm-slot-value.cm-slot-empty {
+      font-style: italic;
+      font-weight: 400;
+      color: #45475a;
+    }
+
+    /* ── Dropdown de autocomplete ── */
+    .cm-slot-dd {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      margin: 0;
+      padding: 3px 0;
+      list-style: none;
+      max-height: 180px;
+      overflow-y: auto;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+    }
+
+    .cm-slot-dd.cm-slot-dd-open {
+      display: block;
+    }
+
+    .cm-slot-dd li {
+      display: flex;
+      align-items: baseline;
+      gap: 5px;
+      padding: 5px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .cm-slot-dd li:hover,
+    .cm-slot-dd li.cm-dd-active {
+      background: var(--bg-hover);
+    }
+
+    .cm-slot-dd li.cm-dd-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      cursor: default;
+    }
+
+    .cm-dd-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex: 1;
+    }
+
+    .cm-dd-type {
+      font-size: 9px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      text-transform: lowercase;
+    }
+
+    /* ── Botão clear do slot (× ao hover quando preenchido) ── */
+    .cm-slot-clear {
+      display: none;
+      position: absolute;
+      top: 50%;
+      right: 4px;
+      transform: translateY(-50%);
+    }
+
+    .cm-slot.cm-slot-filled:hover .cm-slot-clear {
+      display: flex;
+    }
+
+
+
+    /* ── ButtonIcon (expand-all + reset) ── */
+    .btn-icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #13111e;
+      border: 1px solid rgba(124, 58, 237, 0.22);
+      border-radius: 8px;
+      color: rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+      transition: color 0.12s, background 0.12s, border-color 0.12s;
+    }
+
+    .btn-icon:hover {
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(124, 58, 237, 0.1);
+      border-color: rgba(124, 58, 237, 0.65);
+    }
+
+    .btn-icon:active {
+      color: #fff;
+      background: rgba(124, 58, 237, 0.2);
+      border-color: var(--beta);
+    }
+
+    /* ── Tooltip de token (CM-I1) ── */
+    #cm-tooltip {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-size: 11px;
+      color: var(--text-primary);
+      line-height: 1.5;
+      max-width: 220px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.35);
+      cursor: default;
+    }
+
+    .cm-tip-name {
+      font-size: 10px;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    .cm-tip-prop { font-size: 9px; color: var(--text-muted); margin-top: 1px; }
+    .cm-tip-val  { font-size: 10px; font-family: monospace; margin-top: 3px; opacity: 0.75; }
+
+    .cm-tip-row {
+      font-size: 9px;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cm-tip-side {
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      padding: 0 4px;
+      font-weight: 600;
+      font-size: 8px;
+    }
+
+    .cm-tip-kind {
+      display: inline-block;
+      margin-top: 4px;
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .cm-tip-exact   { color: var(--cm-exact);   }
+    .cm-tip-renamed { color: var(--cm-renamed);  }
+    .cm-tip-drifted { color: var(--cm-drifted);  }
+    .cm-tip-removal { color: var(--cm-removal);  }
+    .cm-tip-addon   { color: var(--cm-addon);    }
+
+    /* ── Barra de filtros ── */
+    #cm-filter {
+      display: flex;
+      gap: 6px;
+      padding: 5px 12px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-primary);
+      flex-shrink: 0;
+    }
+
+    .cm-filter-input {
+      flex: 1;
+      min-width: 0;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 8px;
+      font-size: 10px;
+      font-family: Inter, -apple-system, sans-serif;
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .cm-filter-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .cm-filter-input:focus {
+      border-color: var(--beta);
+    }
+
+    /* ── Área canvas ── */
+    #cm-area {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    #cm-canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      cursor: default;
+    }
+
+    /* Estado de loading */
+    #cm-area.cm-loading {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ── Empty state ── */
+    #cm-empty {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    #cm-empty-icon {
+      font-size: 30px;
+      opacity: 0.1;
+    }
+
+    #cm-empty-text {
+      font-size: 11px;
+      color: #45475a;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* ── Legenda ── */
+    #cm-legend {
+      display: flex;
+      gap: 12px;
+      padding: 8px 12px;
+      border-top: 1px solid var(--border);
+      background: var(--bg-surface);
+      flex-shrink: 0;
+      flex-wrap: wrap;
+    }
+
+    .cm-leg {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid transparent;
+      transition: color 0.12s, background 0.12s, border-color 0.12s;
+      user-select: none;
+    }
+
+    .cm-leg:hover {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.05);
+    }
+
+    .cm-leg.cm-leg-active {
+      color: var(--text-primary);
+      background: rgba(255,255,255,0.07);
+      border-color: rgba(255,255,255,0.15);
+    }
+
+    .cm-leg-count {
+      font-size: 9px;
+      font-weight: 600;
+      opacity: 0.6;
+      margin-left: 1px;
+    }
+
+    .cm-leg.cm-leg-active .cm-leg-count {
+      opacity: 1;
+    }
+
+    .cm-leg-line {
+      width: 16px;
+      height: 2px;
+      border-radius: 1px;
+      flex-shrink: 0;
+    }
+
+    .cm-leg-line.cm-dashed {
+      background: transparent !important;
+      border-top: 2px dashed currentColor;
+    }
+
+    /* ── Botão Compare no header ── */
+    .cm-header-btn {
+      color: var(--text-muted);
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .cm-header-btn:hover,
+    .cm-header-btn.active {
+      color: rgba(151, 71, 255, 0.9);
+      background: rgba(151, 71, 255, 0.1);
+    }
+
+    .cm-beta-icon {
+      font-size: 14px;
+      font-style: italic;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+
+    /* ── Focus Overlay (double-click em token) ── */
+    #cm-focus-overlay {
+      display: none;
+      position: absolute;
+      inset: 0;
+      z-index: 200;
+      background: rgba(10, 10, 18, 0.72);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      align-items: center;
+      justify-content: center;
+    }
+
+    #cm-focus-card {
+      background: rgba(28, 27, 40, 0.97);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      width: 340px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+    }
+
+    #cm-focus-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #cm-focus-back {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      color: rgba(255,255,255,0.7);
+      font-size: 11px;
+      padding: 4px 8px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s, color 0.15s;
+    }
+    #cm-focus-back:hover {
+      background: rgba(255,255,255,0.13);
+      color: rgba(255,255,255,0.95);
+    }
+
+    #cm-focus-fullname {
+      flex: 1;
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    #cm-focus-badge {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    #cm-focus-canvas {
+      width: 100%;
+      height: 56px;
+      display: block;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.03);
+    }
+
+    #cm-focus-info {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .cm-focus-side {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .cm-focus-side-label {
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.28);
+      text-transform: uppercase;
+      margin-bottom: 2px;
+    }
+
+    #cm-focus-side-b .cm-focus-side-label {
+      text-align: right;
+    }
+    #cm-focus-side-b .cm-focus-token-name,
+    #cm-focus-side-b .cm-focus-token-prop,
+    #cm-focus-side-b .cm-focus-token-val {
+      text-align: right;
+    }
+
+    .cm-focus-token-name {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.88);
+      line-height: 1.3;
+    }
+
+    .cm-focus-token-prop {
+      font-size: 9px;
+      color: rgba(255,255,255,0.38);
+    }
+
+    .cm-focus-token-val {
+      font-size: 10px;
+      color: rgba(255,255,255,0.55);
+      word-break: break-all;
+    }
+
+    .cm-focus-divider {
+      width: 1px;
+      background: rgba(255,255,255,0.08);
+      flex-shrink: 0;
+    }
+
+    /* ── Easy copy ── */
+    .cm-focus-copyable {
+      cursor: pointer;
+      transition: color 0.12s;
+    }
+    .cm-focus-copyable:hover {
+      color: rgba(255,255,255,1) !important;
+      text-decoration: underline dotted rgba(255,255,255,0.35);
+    }
+
+    .cm-tip-copyable {
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .cm-tip-copy-icon {
+      font-size: 10px;
+      opacity: 0;
+      transition: opacity 0.15s;
+      flex-shrink: 0;
+    }
+    .cm-tip-copyable:hover .cm-tip-copy-icon {
+      opacity: 0.55;
+    }
+
+    /* ── Copy toast ── */
+    #cm-copy-toast {
+      display: none;
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(22, 21, 34, 0.97);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+      z-index: 9999;
+      pointer-events: none;
+      white-space: nowrap;
+      opacity: 1;
+      transition: opacity 0.28s;
+    }
+    #cm-copy-toast.cm-toast-hide {
+      opacity: 0;
+    }
+
+    /* ── Resize handle ── */
+    #cm-resize-handle {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      width: 36px;
+      height: 18px;
+      cursor: se-resize;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    #cm-resize-handle::before,
+    #cm-resize-handle::after {
+      content: '';
+      position: absolute;
+      background: rgba(255,255,255,0.4);
+      border-radius: 1px;
+    }
+
+    #cm-resize-handle::before {
+      width: 7px; height: 1.5px;
+      right: 3px; bottom: 7px;
+      transform: rotate(-45deg);
+      transform-origin: right center;
+    }
+
+    #cm-resize-handle::after {
+      width: 11px; height: 1.5px;
+      right: 3px; bottom: 4px;
+      transform: rotate(-45deg);
+      transform-origin: right center;
+    }
+
+    body:hover #cm-resize-handle { opacity: 1; }
+    #cm-resize-handle:hover { opacity: 1 !important; }
+
+    /* ── Breakpoints responsivos ── */
+
+    @media (max-width: 499px) {
+      #cm-top       { padding: 6px 8px; gap: 6px; }
+      #cm-selectors { gap: 8px; }
+      .cm-slot      { padding: 4px 8px; }
+      #cm-filter    { padding: 4px 8px; gap: 4px; }
+      #cm-legend    { padding: 5px 8px; gap: 6px; }
+    }
+
+    @media (max-width: 399px) {
+      #cm-badge      { display: none; }
+      #cm-expand-all { display: none; }
+      .cm-slot-label { display: none; }
+      #cm-selectors  { gap: 6px; }
+    }
+
+    @media (max-width: 319px) {
+      #cm-reset { display: none; }
+    }
+
+    @media (max-height: 379px) {
+      #cm-filter { display: none; }
+    }
+
+    @media (max-height: 299px) {
+      #cm-legend   { padding: 3px 8px; gap: 4px; }
+      .cm-leg-name { display: none; }
+    }
+
+    @media (max-width: 399px) {
+      #cm-focus-card { width: calc(100% - 32px); }
+    }
+
+    /* ── Laterais de resize ── */
+    #cm-resize-right,
+    #cm-resize-bottom,
+    #cm-resize-left {
+      position: fixed;
+      z-index: 9999;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    #cm-resize-right {
+      top: 0; right: 0;
+      width: 6px; height: 100%;
+      cursor: e-resize;
+    }
+
+    #cm-resize-bottom {
+      bottom: 0; left: 0;
+      width: 100%; height: 6px;
+      cursor: s-resize;
+    }
+
+    #cm-resize-left {
+      top: 0; left: 0;
+      width: 6px; height: 100%;
+      cursor: w-resize;
+    }
+
+    body:hover #cm-resize-right,
+    body:hover #cm-resize-bottom,
+    body:hover #cm-resize-left { opacity: 1; }
+
+    #cm-resize-right:hover,
+    #cm-resize-bottom:hover,
+    #cm-resize-left:hover {
+      background: rgba(124,58,237,0.25);
+      opacity: 1 !important;
+    }
