@@ -1,6 +1,8 @@
 figma.showUI(__html__, { width: 720, height: 600, themeColors: true })
 figma.ui.resize(720, 600)
 
+let _winX = 200, _winY = 100
+
 // ─── Types ────────────────────────────────────────────────────────
 
 interface TokenBinding {
@@ -126,6 +128,10 @@ function detectHardcoded(node: SceneNode): { property: string, value: string }[]
   const hardcoded: { property: string, value: string }[] = []
   const bound: Record<string, any> = (node as any).boundVariables || {}
   const isComponentSet = node.type === 'COMPONENT_SET'
+
+  // Ignorar nodes dentro de operações booleanas (Union, Subtract, Intersect, Exclude)
+  // — os fills/strokes destes nodes são parte da definição da forma, não hardcoded reais
+  if (node.parent && node.parent.type === 'BOOLEAN_OPERATION') return hardcoded
 
   function colorHex(c: { r: number, g: number, b: number }): string {
     return '#'
@@ -259,10 +265,18 @@ figma.ui.onmessage = async (msg: {
   query?: string
   width?: number
   height?: number
+  dx?: number
+  dy?: number
 }) => {
   try {
     if (msg.type === 'RESIZE' && msg.width && msg.height) {
       figma.ui.resize(msg.width, msg.height)
+    }
+
+    if (msg.type === 'MOVE') {
+      _winX += msg.dx || 0
+      _winY += msg.dy || 0
+      figma.ui.reposition(_winX, _winY)
     }
 
     if (msg.type === 'GET_SELECTION') {
