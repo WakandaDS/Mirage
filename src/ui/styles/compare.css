@@ -43,6 +43,20 @@
       flex-shrink: 0;
     }
 
+    #cm-drag-handle {
+      cursor: grab;
+      color: var(--text-dim);
+      padding: 4px 2px;
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+      opacity: 0.35;
+      user-select: none;
+      touch-action: none;
+    }
+    #cm-drag-handle:hover  { opacity: 0.7; }
+    #cm-drag-handle.dragging { cursor: grabbing; opacity: 1; }
+
     #cm-badge {
       background: var(--beta);
       color: #fff;
