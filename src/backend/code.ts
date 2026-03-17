@@ -1,8 +1,6 @@
 figma.showUI(__html__, { width: 720, height: 600, themeColors: true })
 figma.ui.resize(720, 600)
 
-let _winX = 200, _winY = 100
-
 // ─── Types ────────────────────────────────────────────────────────
 
 interface TokenBinding {
@@ -262,21 +260,29 @@ figma.ui.onmessage = async (msg: {
   type: string
   nodeIdA?: string
   nodeIdB?: string
+  nodeId?: string
   query?: string
   width?: number
   height?: number
-  dx?: number
-  dy?: number
 }) => {
   try {
     if (msg.type === 'RESIZE' && msg.width && msg.height) {
       figma.ui.resize(msg.width, msg.height)
     }
 
-    if (msg.type === 'MOVE') {
-      _winX += msg.dx || 0
-      _winY += msg.dy || 0
-      figma.ui.reposition(_winX, _winY)
+    if (msg.type === 'SELECT_NODE' && msg.nodeId) {
+      const node = await figma.getNodeByIdAsync(msg.nodeId)
+      if (node && node.type !== 'DOCUMENT' && node.type !== 'PAGE') {
+        const sceneNode = node as SceneNode
+        // Garantir que estamos na página certa
+        let parent: BaseNode | null = sceneNode.parent
+        while (parent && parent.type !== 'PAGE') parent = parent.parent
+        if (parent && parent.type === 'PAGE' && parent.id !== figma.currentPage.id) {
+          await figma.setCurrentPageAsync(parent as PageNode)
+        }
+        figma.currentPage.selection = [sceneNode]
+        figma.viewport.scrollAndZoomIntoView([sceneNode])
+      }
     }
 
     if (msg.type === 'GET_SELECTION') {

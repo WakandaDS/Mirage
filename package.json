@@ -4,7 +4,7 @@
   "description": "Token compare tool for Figma components",
   "main": "code.js",
   "scripts": {
-    "build": "node scripts/build-ui.js && tsc -p tsconfig.json",
+    "build": "node scripts/build-ui.js && ./node_modules/.bin/tsc -p tsconfig.json",
     "build:ui": "node scripts/build-ui.js",
     "watch:ui": "node scripts/watch-ui.js"
   },

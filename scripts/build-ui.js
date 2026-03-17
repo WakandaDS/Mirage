@@ -121,7 +121,8 @@ function main() {
   html = inject(html, '/* JS:START */', '/* JS:END */', jsContent);
   console.log('  ✓ JS:  ' + JS_FILES.length + ' ficheiros concatenados');
 
-  // 4. Escrever o ficheiro final
+  // 4. Escrever o ficheiro final (garantir que a pasta dist/ existe)
+  fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
   fs.writeFileSync(OUTPUT, html, 'utf-8');
   const sizeKB = (Buffer.byteLength(html, 'utf-8') / 1024).toFixed(1);
   console.log('  ✓ ui.html gerado (' + sizeKB + ' KB)');

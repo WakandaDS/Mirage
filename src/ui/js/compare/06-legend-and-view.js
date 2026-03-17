@@ -82,10 +82,27 @@
      * Expande todos os nós de ambos os lados de uma vez:
      * limpa cmCollapsed por completo e redesenha.
      */
-    function _cmExpandAll() {
+    function _cmSetExpandBtn(expanded) {
+      var btn     = document.getElementById('cm-expand-all');
+      var iconExp = document.getElementById('cm-icon-expand');
+      var iconCol = document.getElementById('cm-icon-collapse');
+      if (!btn || !iconExp || !iconCol) return;
+      btn.dataset.expanded   = expanded ? 'true' : 'false';
+      btn.title              = expanded ? 'Colapsar' : 'Expandir tudo';
+      iconExp.style.display  = expanded ? 'none' : 'inline';
+      iconCol.style.display  = expanded ? 'inline' : 'none';
+    }
+
+    function _cmToggleExpandCollapse() {
       if (!compareResult) return;
-      cmCollapsed = {};
-      _rebuildAndDraw();
+      var btn = document.getElementById('cm-expand-all');
+      if (btn && btn.dataset.expanded === 'true') {
+        _cmResetView();
+      } else {
+        cmCollapsed = {};
+        _rebuildAndDraw();
+        _cmSetExpandBtn(true);
+      }
     }
 
 // ─── Reset view (CM-I10) ────────────────────────────────
@@ -123,5 +140,6 @@
       if (compareResult.treeA) _collapseAllExceptRoot(compareResult.treeA, true);
       if (compareResult.treeB) _collapseAllExceptRoot(compareResult.treeB, true);
 
+      _cmSetExpandBtn(false);
       _rebuildAndDraw(true);
     }

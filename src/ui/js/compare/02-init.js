@@ -20,10 +20,7 @@
 
 
       var expandAllBtn = document.getElementById('cm-expand-all');
-      if (expandAllBtn) expandAllBtn.addEventListener('click', _cmExpandAll);
-
-      var resetBtn = document.getElementById('cm-reset');
-      if (resetBtn) resetBtn.addEventListener('click', _cmResetView);
+      if (expandAllBtn) expandAllBtn.addEventListener('click', _cmToggleExpandCollapse);
 
       var vsBtn = document.getElementById('cm-vs');
       if (vsBtn) vsBtn.addEventListener('click', _cmSwapSlots);

@@ -43,21 +43,7 @@
       flex-shrink: 0;
     }
 
-    #cm-drag-handle {
-      cursor: grab;
-      color: var(--text-dim);
-      padding: 4px 2px;
-      display: flex;
-      align-items: center;
-      flex-shrink: 0;
-      opacity: 0.35;
-      user-select: none;
-      touch-action: none;
-    }
-    #cm-drag-handle:hover  { opacity: 0.7; }
-    #cm-drag-handle.dragging { cursor: grabbing; opacity: 1; }
-
-    #cm-badge {
+#cm-badge {
       background: var(--beta);
       color: #fff;
       font-size: 9px;
@@ -190,6 +176,28 @@
       top: 50%;
       right: 4px;
       transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      background: #13111e;
+      border: 1px solid rgba(124, 58, 237, 0.22);
+      border-radius: 6px;
+      color: rgba(255, 255, 255, 0.45);
+      cursor: pointer;
+      font-size: 12px;
+      line-height: 1;
+      transition: color 0.12s, background 0.12s, border-color 0.12s;
+    }
+    .cm-slot-clear:hover {
+      color: rgba(255, 255, 255, 0.85);
+      background: rgba(124, 58, 237, 0.1);
+      border-color: rgba(124, 58, 237, 0.65);
+    }
+    .cm-slot-clear:active {
+      color: #fff;
+      background: rgba(124, 58, 237, 0.2);
     }
 
     .cm-slot.cm-slot-filled:hover .cm-slot-clear {
