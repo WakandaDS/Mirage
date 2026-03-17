@@ -45,6 +45,20 @@
         _cmCopyToClipboard(tokenNode.label);
         return;
       }
+      // Filtro ativo → hit test em TODAS as layer nodes (incluindo sem tokens)
+      if (cmFilterLayer || cmFilterToken || cmIsolateKinds.length > 0) {
+        var allNodes = (cmLayoutA ? cmLayoutA.nodes : []).concat(cmLayoutB ? cmLayoutB.nodes : []);
+        for (var i = 0; i < allNodes.length; i++) {
+          var fn = allNodes[i];
+          if (fn.type !== 'layer') continue;
+          if (pos.x >= fn.x && pos.x <= fn.x + fn.w && pos.y >= fn.y && pos.y <= fn.y + fn.h) {
+            post({ type: 'SELECT_NODE', nodeId: fn.id });
+            return;
+          }
+        }
+        return;
+      }
+
       var node = _cmHitLayerNode(pos.x, pos.y);
       if (!node) return;
 
@@ -117,7 +131,24 @@
       if (!cmLayoutA || !cmLayoutB) return;
       var pos       = _cmEventCoords(e);
       var tokenNode = _cmHitTokenNode(pos.x, pos.y);
-      var layerNode = tokenNode ? null : _cmHitLayerNode(pos.x, pos.y);
+
+      // Em modo filtro, detetar qualquer layer node (incluindo sem tokens)
+      var layerNode = null;
+      if (!tokenNode) {
+        if (cmFilterLayer || cmFilterToken || cmIsolateKinds.length > 0) {
+          var _allNodes = (cmLayoutA ? cmLayoutA.nodes : []).concat(cmLayoutB ? cmLayoutB.nodes : []);
+          for (var _i = 0; _i < _allNodes.length; _i++) {
+            var _n = _allNodes[_i];
+            if (_n.type !== 'layer') continue;
+            if (pos.x >= _n.x && pos.x <= _n.x + _n.w && pos.y >= _n.y && pos.y <= _n.y + _n.h) {
+              layerNode = _n; break;
+            }
+          }
+        } else {
+          layerNode = _cmHitLayerNode(pos.x, pos.y);
+        }
+      }
+
       var hitNode   = tokenNode || layerNode;
       var hitId     = hitNode ? hitNode.id : null;
 

@@ -25,13 +25,6 @@
 
     <!-- Barra de topo: badge beta + selectors A e B -->
     <div id="cm-top">
-      <div id="cm-drag-handle" title="Mover janela">
-        <svg width="10" height="16" viewBox="0 0 10 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="2" cy="2"  r="1.5"/><circle cx="8" cy="2"  r="1.5"/>
-          <circle cx="2" cy="8"  r="1.5"/><circle cx="8" cy="8"  r="1.5"/>
-          <circle cx="2" cy="14" r="1.5"/><circle cx="8" cy="14" r="1.5"/>
-        </svg>
-      </div>
       <div id="cm-badge"><span>β</span><span>Mirage</span></div>
       <div id="cm-selectors">
         <div id="cm-slot-a" class="cm-slot">
@@ -50,24 +43,20 @@
           <button class="cm-slot-clear ctrl-btn" data-slot="b" title="Limpar">×</button>
         </div>
       </div>
-      <button id="cm-expand-all" class="btn-icon" title="Expandir tudo">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <button id="cm-expand-all" class="btn-icon" title="Expandir tudo" data-expanded="false">
+        <svg id="cm-icon-expand" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M1 9v4h4M13 5V1H9M1 13l5-5M9 5l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
-      </button>
-      <button id="cm-reset" class="btn-icon" title="Repor vista">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M5 1v4H1M9 13v-4h4M1 1l4 4M9 9l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg id="cm-icon-collapse" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none;">
+          <path d="M1 5V1H5M13 9v4H9M1 1l4 4M13 13l-4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
     </div>
 
-    <!-- Barra de filtros (oculta temporariamente)
     <div id="cm-filter">
       <input type="text" id="cm-filter-layer" class="cm-filter-input" placeholder="Filtrar layer…" autocomplete="off" spellcheck="false">
       <input type="text" id="cm-filter-token" class="cm-filter-input" placeholder="Filtrar token…" autocomplete="off" spellcheck="false">
     </div>
-    -->
 
     <!-- Canvas de comparação -->
     <div id="cm-area">
